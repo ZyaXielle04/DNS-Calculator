@@ -1,5 +1,5 @@
-// Version: 2.0.0 - Update this comment whenever you make changes
-const CACHE_NAME = 'barangay-fare-v2'; // INCREMENT THIS WITH EVERY UPDATE
+
+const CACHE_NAME = 'barangay-fare-v2';
 
 // Files to cache
 const urlsToCache = [

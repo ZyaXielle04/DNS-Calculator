@@ -54,7 +54,7 @@ const barangayList = document.getElementById('barangayList');
 let selectedFareType = 'regular';
 let selectedPayment = 0;
 
-// ========== IMPROVED PWA INSTALLATION & UPDATE HANDLING ==========
+// ========== PWA INSTALLATION & UPDATE HANDLING ==========
 let deferredPrompt;
 const installButton = document.getElementById('installButton');
 
