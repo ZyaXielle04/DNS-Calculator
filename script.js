@@ -40,16 +40,15 @@ const routeSelect = document.getElementById('routeSelect');
 const pickupSelect = document.getElementById('pickupSelect');
 const dropoffSelect = document.getElementById('dropoffSelect');
 const multiplierInput = document.getElementById('multiplierInput');
+const regularBtn = document.getElementById('regularBtn');
+const discountedBtn = document.getElementById('discountedBtn');
+const paymentButtons = document.querySelectorAll('.payment-btn:not(.clear-btn)');
+const clearButton = document.getElementById('clearPayment');
+const selectedAmountDisplay = document.getElementById('selectedAmount');
 const displayPerPersonFare = document.getElementById('displayPerPersonFare');
 const displayTotalFare = document.getElementById('displayTotalFare');
 const changeDisplay = document.getElementById('changeDisplay');
 const barangayList = document.getElementById('barangayList');
-
-// New elements for buttons
-const fareTypeButtons = document.querySelectorAll('.option-btn');
-const paymentButtons = document.querySelectorAll('.payment-btn');
-const clearButton = document.getElementById('clearPayment');
-const selectedAmountDisplay = document.querySelector('.selected-amount');
 
 // State variables
 let selectedFareType = 'regular';
@@ -100,57 +99,44 @@ window.addEventListener('appinstalled', (evt) => {
 });
 
 // ========== FARE TYPE BUTTONS ==========
-fareTypeButtons.forEach(button => {
-    button.addEventListener('click', function() {
-        // Remove active class from all buttons
-        fareTypeButtons.forEach(btn => btn.classList.remove('active'));
-        
-        // Add active class to clicked button
-        this.classList.add('active');
-        
-        // Update selected fare type
-        selectedFareType = this.dataset.fare;
-        
-        // Update calculations
-        updateAllCalculations();
-        saveSettings();
-    });
+regularBtn.addEventListener('click', function() {
+    regularBtn.classList.add('active');
+    discountedBtn.classList.remove('active');
+    selectedFareType = 'regular';
+    updateAllCalculations();
+    saveSettings();
+});
+
+discountedBtn.addEventListener('click', function() {
+    discountedBtn.classList.add('active');
+    regularBtn.classList.remove('active');
+    selectedFareType = 'discounted';
+    updateAllCalculations();
+    saveSettings();
 });
 
 // ========== PAYMENT BUTTONS ==========
 paymentButtons.forEach(button => {
-    if (!button.classList.contains('clear-btn')) {
-        button.addEventListener('click', function() {
-            const amount = parseFloat(this.dataset.amount);
-            selectedPayment = amount;
-            updateSelectedAmountDisplay();
-            updateChange();
-        });
-    }
+    button.addEventListener('click', function() {
+        const amount = parseFloat(this.dataset.amount);
+        selectedPayment = amount;
+        selectedAmountDisplay.textContent = `Selected: ₱${selectedPayment.toFixed(2)}`;
+        updateChange();
+    });
 });
 
 // Clear payment button
-if (clearButton) {
-    clearButton.addEventListener('click', function() {
-        selectedPayment = 0;
-        updateSelectedAmountDisplay();
-        updateChange();
-    });
-}
-
-// Update selected amount display
-function updateSelectedAmountDisplay() {
-    if (selectedAmountDisplay) {
-        selectedAmountDisplay.textContent = `Selected: ₱${selectedPayment.toFixed(2)}`;
-    }
-}
+clearButton.addEventListener('click', function() {
+    selectedPayment = 0;
+    selectedAmountDisplay.textContent = 'Selected: ₱0.00';
+    updateChange();
+});
 
 // ========== CORE CALCULATOR FUNCTIONS ==========
 
 // Initialize the page
 function init() {
     loadSettings();
-    updateSelectedAmountDisplay();
     updateBarangayList();
     populateBarangayDropdowns();
     updateAllCalculations();
@@ -312,7 +298,6 @@ function updateChange() {
 // Add validation for pickup and dropoff to prevent same selection
 function validateLocations() {
     if (pickupSelect.value === dropoffSelect.value) {
-        // If same, try to set dropoff to next available
         const barangays = routeData[routeSelect.value].barangays;
         const currentIndex = barangays.indexOf(pickupSelect.value);
         if (currentIndex < barangays.length - 1) {
@@ -350,12 +335,13 @@ function loadSettings() {
             // Set fare type button
             if (settings.fareType) {
                 selectedFareType = settings.fareType;
-                fareTypeButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.dataset.fare === settings.fareType) {
-                        btn.classList.add('active');
-                    }
-                });
+                if (selectedFareType === 'regular') {
+                    regularBtn.classList.add('active');
+                    discountedBtn.classList.remove('active');
+                } else {
+                    discountedBtn.classList.add('active');
+                    regularBtn.classList.remove('active');
+                }
             }
         } catch (e) {
             console.log('Error loading settings');
@@ -366,7 +352,6 @@ function loadSettings() {
 // Handle online/offline status
 function updateOnlineStatus() {
     if (!navigator.onLine) {
-        // Show offline indicator
         const offlineDiv = document.createElement('div');
         offlineDiv.className = 'offline-indicator';
         offlineDiv.textContent = '📴 You are offline - using cached version';

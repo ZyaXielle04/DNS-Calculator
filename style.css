@@ -39,16 +39,6 @@ h1 {
     flex-wrap: wrap;
 }
 
-h1 span {
-    background: #1a4b6d;
-    color: white;
-    font-size: clamp(0.75rem, 2.5vw, 0.95rem);
-    padding: 0.25rem 1.2rem;
-    border-radius: 40px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
 .sub {
     color: #1f5879;
     font-weight: 450;
@@ -242,6 +232,7 @@ h1 span {
     border-color: #c44545;
     color: #c44545;
     font-weight: 600;
+    min-width: 80px;
 }
 
 .clear-btn:hover {
@@ -347,16 +338,6 @@ h1 span {
     padding: 0.5rem;
     font-size: 0.9rem;
     z-index: 1000;
-}
-
-/* Footnote */
-.footnote {
-    text-align: center;
-    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
-    color: #4e718b;
-    margin-top: 1.5rem;
-    font-style: italic;
-    padding: 0 0.5rem;
 }
 
 /* Responsive breakpoints */

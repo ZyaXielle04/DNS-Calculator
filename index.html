@@ -58,9 +58,9 @@
                 </div>
                 <div class="select-group">
                     <label>💳 Fare Type</label>
-                    <div class="button-group" id="fareTypeButtons">
-                        <button class="option-btn active" data-fare="regular">Regular (₱13)</button>
-                        <button class="option-btn" data-fare="discounted">Discounted (₱11)</button>
+                    <div class="button-group">
+                        <button class="option-btn active" id="regularBtn" data-fare="regular">Regular (₱13)</button>
+                        <button class="option-btn" id="discountedBtn" data-fare="discounted">Discounted (₱11)</button>
                     </div>
                 </div>
                 <div class="select-group">
@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        <!-- Payment Section -->
+        <!-- Payment Section - BUTTONS ONLY -->
         <div class="payment-area">
             <div class="input-block">
                 <label>💵 Cash Paid (Bayad)</label>
