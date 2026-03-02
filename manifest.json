@@ -1,0 +1,24 @@
+{
+    "name": "Barangay Fare Calculator",
+    "short_name": "Barangay Fare",
+    "description": "Calculate fares for barangay commuters easily",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f3f7fc",
+    "theme_color": "#1a4b6d",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

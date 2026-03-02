@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barangay Fare Calculator</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1a4b6d">
+    <meta name="description" content="Calculate barangay fares easily with this PWA">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Barangay Fare">
+    
+    <!-- PWA Icons (you'll need to create these) -->
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="card">
+        <h1>
+            Barangay Fare Calculator
+        </h1>
+        <div class="sub">First 4 barangays: ₱13 regular / ₱11 disc · +₱2 per extra barangay</div>
+
+        <div class="route-section">
+            <!-- Route Selection -->
+            <div class="select-group">
+                <label>🚌 Select Route</label>
+                <select id="routeSelect" class="modern-select">
+                    <option value="route1">Balagtas - Bulacan</option>
+                    <option value="route2">Guiguinto - Bulakan</option>
+                    <option value="route3">Malolos - Bulakan</option>
+                </select>
+            </div>
+
+            <div class="grid-2">
+                <div class="select-group">
+                    <label>🚏 Pickup Barangay</label>
+                    <select id="pickupSelect" class="modern-select"></select>
+                </div>
+                <div class="select-group">
+                    <label>📍 DropOff Barangay</label>
+                    <select id="dropoffSelect" class="modern-select"></select>
+                </div>
+            </div>
+
+            <div class="grid-3">
+                <div class="select-group">
+                    <label>👥 Multiplier (passengers)</label>
+                    <input type="number" id="multiplierInput" min="1" value="1" class="modern-input">
+                </div>
+                <div class="select-group">
+                    <label>💳 Fare Type</label>
+                    <select id="discountSelect" class="modern-select">
+                        <option value="regular">Regular (₱13 base)</option>
+                        <option value="discounted">Discounted (₱11 base)</option>
+                    </select>
+                </div>
+                <div class="select-group">
+                    <label>🧮 Fare per person</label>
+                    <div class="fake-input" id="displayPerPersonFare">₱13.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Section -->
+        <div class="payment-area">
+            <div class="input-block">
+                <label>💵 Cash Paid (Bayad)</label>
+                <input type="number" id="bayadInput" class="modern-input money" placeholder="Enter amount" min="0" step="0.01">
+            </div>
+            <div class="input-block">
+                <label>💰 Total Fare</label>
+                <div class="fake-input" id="displayTotalFare">₱13.00</div>
+            </div>
+        </div>
+
+        <!-- Result Display -->
+        <div class="result-box" id="changeDisplay">
+            <span class="change-placeholder">Enter payment to see change</span>
+        </div>
+
+        <!-- Barangay List Display -->
+        <div class="barangay-list" id="barangayList">
+            <strong>Route 1 Barangays:</strong> San Jose, San Miguel, San Nicolas, San Mateo, San Pedro, San Juan, San Vicente, San Rafael
+        </div>
+        
+        <!-- Install PWA Button (appears only when installable) -->
+        <button id="installButton" class="install-btn" style="display: none;">
+            📲 Install App
+        </button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

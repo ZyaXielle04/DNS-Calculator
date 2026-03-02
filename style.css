@@ -1,0 +1,348 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: linear-gradient(145deg, #f3f7fc 0%, #e6ecf4 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.card {
+    max-width: 850px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 40px;
+    box-shadow: 0 25px 45px -10px rgba(10, 30, 50, 0.3), inset 0 1px 2px white;
+    padding: 2rem 2rem 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+h1 {
+    font-size: 2.1rem;
+    font-weight: 600;
+    margin: 0 0 0.2rem 0;
+    color: #0b2e45;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.02em;
+}
+
+h1 span {
+    background: #1b4e6e;
+    color: white;
+    font-size: 1rem;
+    padding: 0.2rem 1rem;
+    border-radius: 40px;
+    font-weight: 400;
+    margin-left: 10px;
+}
+
+.sub {
+    color: #2a4d66;
+    font-weight: 400;
+    margin-top: 0;
+    margin-bottom: 1.8rem;
+    border-left: 4px solid #3282a8;
+    padding-left: 1rem;
+    background: rgba(50, 130, 168, 0.05);
+    border-radius: 0 20px 20px 0;
+    line-height: 1.4;
+}
+
+.route-section {
+    background: #dae9f3;
+    padding: 1.5rem;
+    border-radius: 32px;
+    margin-bottom: 2rem;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.02), 0 6px 12px rgba(22, 42, 60, 0.1);
+}
+
+.select-group {
+    margin-bottom: 1rem;
+}
+
+.select-group label {
+    display: block;
+    font-weight: 600;
+    color: #0f3b55;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+}
+
+.modern-select, .modern-input {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    background: white;
+    border: 1.5px solid rgba(31, 78, 107, 0.2);
+    border-radius: 24px;
+    font-size: 1rem;
+    color: #0b2e45;
+    outline: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.02);
+}
+
+.modern-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231b4e6e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.2rem;
+}
+
+.modern-select:hover, .modern-input:hover {
+    border-color: #1b4e6e;
+}
+
+.modern-select:focus, .modern-input:focus {
+    border-color: #0f3b55;
+    box-shadow: 0 0 0 3px rgba(27, 78, 110, 0.2);
+}
+
+.fake-input {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    background: #f0f5fa;
+    border: 1.5px solid rgba(31, 78, 107, 0.15);
+    border-radius: 24px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #0b2e45;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.grid-2, .grid-3 {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.grid-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.payment-area {
+    background: #edf4f9;
+    border-radius: 28px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.input-block label {
+    display: block;
+    font-weight: 600;
+    color: #0f3b55;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.money::before {
+    content: '₱';
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+.calc-btn {
+    width: 100%;
+    padding: 1.2rem;
+    background: #1b4e6e;
+    color: white;
+    border: none;
+    border-radius: 40px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 8px 18px rgba(21, 65, 96, 0.3);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+.calc-btn:hover {
+    background: #0f3b55;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 22px rgba(21, 65, 96, 0.4);
+}
+
+.calc-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 4px 12px rgba(21, 65, 96, 0.3);
+}
+
+.result-box {
+    background: #cbdbe8;
+    border-radius: 40px;
+    padding: 1.8rem;
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #052234;
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.05), 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.change-placeholder {
+    font-size: 1.2rem;
+    font-weight: 400;
+    opacity: 0.7;
+}
+
+.barangay-list {
+    background: #eef3f8;
+    border-radius: 20px;
+    padding: 1rem 1.5rem;
+    font-size: 0.95rem;
+    color: #1b4e6e;
+    border-left: 4px solid #1b4e6e;
+    line-height: 1.6;
+}
+
+.footnote {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #597a95;
+    margin-top: 1.2rem;
+    font-style: italic;
+}
+
+@media (max-width: 650px) {
+    .card {
+        padding: 1.5rem;
+    }
+    
+    .grid-2, .grid-3, .payment-area {
+        grid-template-columns: 1fr;
+    }
+    
+    h1 {
+        font-size: 1.6rem;
+        flex-wrap: wrap;
+    }
+}
+
+/* Enhancement for automatic change display */
+.result-box {
+    transition: all 0.3s ease;
+}
+
+.result-box .change-placeholder {
+    font-size: clamp(1rem, 4vw, 1.3rem);
+    font-weight: 450;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.result-box .change-placeholder::before {
+    content: '💵';
+    font-size: 1.4em;
+    opacity: 0.8;
+}
+
+/* Success state for exact payment */
+.result-box:has(span:contains("Exact payment")) {
+    background: #c8e0d9;
+}
+
+/* Insufficient payment highlight */
+.result-box:has(span[style*="#c44545"]) {
+    background: #ffe4e4;
+    animation: softShake 0.3s ease;
+}
+
+@keyframes softShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+
+/* Live update indicator */
+.fare-update {
+    animation: fadePulse 0.3s ease;
+}
+
+@keyframes fadePulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; transform: scale(1.02); }
+    100% { opacity: 1; }
+}
+
+/* Smooth transitions for all interactive elements */
+.modern-select, .modern-input, .fake-input {
+    transition: all 0.2s ease;
+}
+
+/* Payment input highlight */
+.modern-input.money:focus {
+    border-color: #2e7d5a;
+    box-shadow: 0 0 0 4px rgba(46, 125, 90, 0.15);
+}
+
+/* Install Button */
+.install-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #2e7d5a;
+    color: white;
+    border: none;
+    border-radius: 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 8px 18px rgba(46, 125, 90, 0.3);
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.install-btn:hover {
+    background: #1e5e43;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 22px rgba(46, 125, 90, 0.4);
+}
+
+.install-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 4px 12px rgba(46, 125, 90, 0.3);
+}
+
+/* Offline indicator (optional) */
+.offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #c44545;
+    color: white;
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    z-index: 1000;
+}
