@@ -1,4 +1,7 @@
-const CACHE_NAME = 'barangay-fare-v1';
+// Version: 2.0.0 - Update this comment whenever you make changes
+const CACHE_NAME = 'barangay-fare-v2'; // INCREMENT THIS WITH EVERY UPDATE
+
+// Files to cache
 const urlsToCache = [
     '/',
     '/index.html',
@@ -9,17 +12,22 @@ const urlsToCache = [
     '/icons/icon-512.png'
 ];
 
-// Install service worker
+// Install event - cache files
 self.addEventListener('install', event => {
+    console.log('Service Worker installing...');
+    // Force new service worker to activate immediately
+    self.skipWaiting();
+    
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
+                console.log('Caching app files');
                 return cache.addAll(urlsToCache);
             })
     );
 });
 
-// Cache and return requests
+// Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
@@ -30,18 +38,32 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// Update service worker
+// Activate event - clean up old caches
 self.addEventListener('activate', event => {
-    const cacheWhitelist = [CACHE_NAME];
+    console.log('Service Worker activating...');
+    
+    // Take control of all clients immediately
+    event.waitUntil(clients.claim());
+    
+    // Delete old caches
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
             );
         })
     );
+});
+
+// Listen for skip waiting message from the page
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        console.log('Skip waiting message received');
+        self.skipWaiting();
+    }
 });
