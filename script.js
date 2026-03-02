@@ -40,23 +40,24 @@ const routeSelect = document.getElementById('routeSelect');
 const pickupSelect = document.getElementById('pickupSelect');
 const dropoffSelect = document.getElementById('dropoffSelect');
 const multiplierInput = document.getElementById('multiplierInput');
-const discountSelect = document.getElementById('discountSelect');
-const bayadInput = document.getElementById('bayadInput');
 const displayPerPersonFare = document.getElementById('displayPerPersonFare');
 const displayTotalFare = document.getElementById('displayTotalFare');
 const changeDisplay = document.getElementById('changeDisplay');
 const barangayList = document.getElementById('barangayList');
 
+// New elements for buttons
+const fareTypeButtons = document.querySelectorAll('.option-btn');
+const paymentButtons = document.querySelectorAll('.payment-btn');
+const clearButton = document.getElementById('clearPayment');
+const selectedAmountDisplay = document.querySelector('.selected-amount');
+
+// State variables
+let selectedFareType = 'regular';
+let selectedPayment = 0;
+
 // ========== PWA INSTALLATION ==========
 let deferredPrompt;
-const installButton = document.createElement('button');
-installButton.id = 'installButton';
-installButton.className = 'install-btn';
-installButton.innerHTML = '📲 Install App';
-installButton.style.display = 'none';
-
-// Add install button to the card
-document.querySelector('.card').appendChild(installButton);
+const installButton = document.getElementById('installButton');
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {
@@ -98,39 +99,81 @@ window.addEventListener('appinstalled', (evt) => {
     console.log('App was installed successfully');
 });
 
-// Check if app is running in standalone mode
-if (window.matchMedia('(display-mode: standalone)').matches || 
-    window.navigator.standalone === true) {
-    console.log('App is running in standalone mode');
+// ========== FARE TYPE BUTTONS ==========
+fareTypeButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        fareTypeButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Update selected fare type
+        selectedFareType = this.dataset.fare;
+        
+        // Update calculations
+        updateAllCalculations();
+        saveSettings();
+    });
+});
+
+// ========== PAYMENT BUTTONS ==========
+paymentButtons.forEach(button => {
+    if (!button.classList.contains('clear-btn')) {
+        button.addEventListener('click', function() {
+            const amount = parseFloat(this.dataset.amount);
+            selectedPayment = amount;
+            updateSelectedAmountDisplay();
+            updateChange();
+        });
+    }
+});
+
+// Clear payment button
+if (clearButton) {
+    clearButton.addEventListener('click', function() {
+        selectedPayment = 0;
+        updateSelectedAmountDisplay();
+        updateChange();
+    });
+}
+
+// Update selected amount display
+function updateSelectedAmountDisplay() {
+    if (selectedAmountDisplay) {
+        selectedAmountDisplay.textContent = `Selected: ₱${selectedPayment.toFixed(2)}`;
+    }
 }
 
 // ========== CORE CALCULATOR FUNCTIONS ==========
 
 // Initialize the page
 function init() {
+    loadSettings();
+    updateSelectedAmountDisplay();
     updateBarangayList();
     populateBarangayDropdowns();
     updateAllCalculations();
     
-    // Event listeners - all updates happen automatically
+    // Event listeners
     routeSelect.addEventListener('change', function() {
         updateBarangayList();
         populateBarangayDropdowns();
         updateAllCalculations();
+        saveSettings();
     });
     
     pickupSelect.addEventListener('change', updateAllCalculations);
     dropoffSelect.addEventListener('change', updateAllCalculations);
     multiplierInput.addEventListener('input', updateAllCalculations);
-    discountSelect.addEventListener('change', updateAllCalculations);
-    bayadInput.addEventListener('input', updateAllCalculations);
     
-    // Add keyboard support for Enter key
-    bayadInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
+    // Add validation for multiplier
+    multiplierInput.addEventListener('blur', function() {
+        if (this.value === '' || parseInt(this.value) < 1) {
+            this.value = 1;
             updateAllCalculations();
         }
+        saveSettings();
     });
 }
 
@@ -197,7 +240,6 @@ function calculateFare() {
     const pickup = pickupSelect.value;
     const dropoff = dropoffSelect.value;
     const multiplier = parseInt(multiplierInput.value) || 1;
-    const discountType = discountSelect.value;
     
     // Find indices of pickup and dropoff
     const pickupIndex = barangays.indexOf(pickup);
@@ -212,13 +254,13 @@ function calculateFare() {
     const end = Math.max(pickupIndex, dropoffIndex);
     const barangaysVisited = end - start + 1;
     
-    // Calculate base fare
+    // Calculate base fare based on selected fare type
     let baseFarePerPerson;
     if (barangaysVisited <= 4) {
-        baseFarePerPerson = discountType === 'regular' ? 13 : 11;
+        baseFarePerPerson = selectedFareType === 'regular' ? 13 : 11;
     } else {
         const extraBarangays = barangaysVisited - 4;
-        const baseRate = discountType === 'regular' ? 13 : 11;
+        const baseRate = selectedFareType === 'regular' ? 13 : 11;
         baseFarePerPerson = baseRate + (extraBarangays * 2);
     }
     
@@ -238,21 +280,20 @@ function updateChange() {
     if (!fareData) return;
     
     const totalFare = fareData.totalFare;
-    const bayad = parseFloat(bayadInput.value) || 0;
     
     // Handle different payment scenarios
-    if (bayad <= 0) {
-        changeDisplay.innerHTML = '<span class="change-placeholder">💳 Enter payment amount</span>';
+    if (selectedPayment <= 0) {
+        changeDisplay.innerHTML = '<span class="change-placeholder">💳 Select payment amount</span>';
         return;
     }
     
-    if (bayad < totalFare) {
-        const kulang = (totalFare - bayad).toFixed(2);
+    if (selectedPayment < totalFare) {
+        const kulang = (totalFare - selectedPayment).toFixed(2);
         changeDisplay.innerHTML = `<span style="color: #c44545;">⚠️ Insufficient payment — need ₱${kulang} more</span>`;
         return;
     }
     
-    const change = bayad - totalFare;
+    const change = selectedPayment - totalFare;
     
     // Format change display with visual feedback
     if (change === 0) {
@@ -267,28 +308,6 @@ function updateChange() {
         changeDisplay.classList.remove('fare-update');
     }, 300);
 }
-
-// Add real-time formatting for bayad input
-bayadInput.addEventListener('focus', function() {
-    if (this.value === '0' || this.value === '') {
-        this.value = '';
-    }
-});
-
-bayadInput.addEventListener('blur', function() {
-    if (this.value === '') {
-        this.value = '';
-        updateAllCalculations();
-    }
-});
-
-// Add input validation for multiplier
-multiplierInput.addEventListener('blur', function() {
-    if (this.value === '' || parseInt(this.value) < 1) {
-        this.value = 1;
-        updateAllCalculations();
-    }
-});
 
 // Add validation for pickup and dropoff to prevent same selection
 function validateLocations() {
@@ -314,7 +333,7 @@ function saveSettings() {
     const settings = {
         route: routeSelect.value,
         multiplier: multiplierInput.value,
-        discountType: discountSelect.value
+        fareType: selectedFareType
     };
     localStorage.setItem('fareCalculatorSettings', JSON.stringify(settings));
 }
@@ -325,22 +344,24 @@ function loadSettings() {
     if (saved) {
         try {
             const settings = JSON.parse(saved);
-            routeSelect.value = settings.route;
-            multiplierInput.value = settings.multiplier;
-            discountSelect.value = settings.discountType;
+            routeSelect.value = settings.route || 'route1';
+            multiplierInput.value = settings.multiplier || 1;
+            
+            // Set fare type button
+            if (settings.fareType) {
+                selectedFareType = settings.fareType;
+                fareTypeButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.fare === settings.fareType) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
         } catch (e) {
             console.log('Error loading settings');
         }
     }
 }
-
-// Save settings when changed
-routeSelect.addEventListener('change', saveSettings);
-multiplierInput.addEventListener('change', saveSettings);
-discountSelect.addEventListener('change', saveSettings);
-
-// Load settings and start
-loadSettings();
 
 // Handle online/offline status
 function updateOnlineStatus() {

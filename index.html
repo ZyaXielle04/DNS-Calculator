@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Barangay Fare">
     
-    <!-- PWA Icons (you'll need to create these) -->
+    <!-- PWA Icons -->
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
@@ -58,10 +58,10 @@
                 </div>
                 <div class="select-group">
                     <label>💳 Fare Type</label>
-                    <select id="discountSelect" class="modern-select">
-                        <option value="regular">Regular (₱13 base)</option>
-                        <option value="discounted">Discounted (₱11 base)</option>
-                    </select>
+                    <div class="button-group" id="fareTypeButtons">
+                        <button class="option-btn active" data-fare="regular">Regular (₱13)</button>
+                        <button class="option-btn" data-fare="discounted">Discounted (₱11)</button>
+                    </div>
                 </div>
                 <div class="select-group">
                     <label>🧮 Fare per person</label>
@@ -74,7 +74,13 @@
         <div class="payment-area">
             <div class="input-block">
                 <label>💵 Cash Paid (Bayad)</label>
-                <input type="number" id="bayadInput" class="modern-input money" placeholder="Enter amount" min="0" step="0.01">
+                <div class="payment-buttons">
+                    <button class="payment-btn" data-amount="20">₱20</button>
+                    <button class="payment-btn" data-amount="50">₱50</button>
+                    <button class="payment-btn" data-amount="100">₱100</button>
+                    <button class="payment-btn clear-btn" id="clearPayment">Clear</button>
+                </div>
+                <div class="selected-amount" id="selectedAmount">Selected: ₱0.00</div>
             </div>
             <div class="input-block">
                 <label>💰 Total Fare</label>
@@ -84,15 +90,15 @@
 
         <!-- Result Display -->
         <div class="result-box" id="changeDisplay">
-            <span class="change-placeholder">Enter payment to see change</span>
+            <span class="change-placeholder">Select payment to see change</span>
         </div>
 
         <!-- Barangay List Display -->
         <div class="barangay-list" id="barangayList">
-            <strong>Route 1 Barangays:</strong> San Jose, San Miguel, San Nicolas, San Mateo, San Pedro, San Juan, San Vicente, San Rafael
+            <strong>Route 1 Barangays:</strong> Bagumbayan/San Jose, Matungao, Panginay Guiguinto, Panginay Balagtas, Wawa
         </div>
         
-        <!-- Install PWA Button (appears only when installable) -->
+        <!-- Install PWA Button -->
         <button id="installButton" class="install-btn" style="display: none;">
             📲 Install App
         </button>
