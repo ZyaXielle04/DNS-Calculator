@@ -111,35 +111,6 @@ h1 {
     margin: 0;
 }
 
-.fake-input {
-    width: 100%;
-    padding: 0.9rem 1.2rem;
-    background: #eaf1f8;
-    border: 2px solid rgba(26, 75, 109, 0.15);
-    border-radius: min(40px, 8vw);
-    font-size: clamp(1rem, 3.5vw, 1.25rem);
-    font-weight: 600;
-    color: #083344;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 0.75rem;
-}
-
-.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 0.75rem;
-}
-
 /* Button Group Styles */
 .button-group {
     display: flex;
@@ -179,9 +150,6 @@ h1 {
     border-radius: clamp(24px, 4vw, 36px);
     padding: clamp(1.2rem, 3vw, 1.8rem);
     margin-bottom: 1.8rem;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(1rem, 3vw, 2rem);
     box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.8), 
                 0 8px 16px rgba(0, 30, 50, 0.1);
 }
@@ -436,13 +404,12 @@ footer a:hover::after {
         grid-template-columns: repeat(2, 1fr);
     }
     
-    .grid-3 .select-group:last-child {
-        grid-column: span 2;
+    .payment-area {
+        display: block;
     }
     
-    .payment-area {
-        grid-template-columns: 1fr;
-        gap: 1.2rem;
+    .input-block:first-child {
+        margin-bottom: 1.2rem;
     }
 }
 
@@ -458,10 +425,6 @@ footer a:hover::after {
     .grid-2, .grid-3 {
         grid-template-columns: 1fr;
         gap: 0.8rem;
-    }
-    
-    .grid-3 .select-group:last-child {
-        grid-column: auto;
     }
     
     .payment-buttons {
@@ -505,16 +468,6 @@ footer a:hover::after {
         color: #e3f0f7;
     }
     
-    .fake-input {
-        background: #1d394b;
-        border-color: #3d6379;
-        color: #daecf8;
-    }
-    
-    .payment-area {
-        background: #1f3f53;
-    }
-    
     .option-btn {
         background: #1e3a4a;
         border-color: #3d6379;
@@ -528,6 +481,10 @@ footer a:hover::after {
     .option-btn.active {
         background: #3d7ba3;
         border-color: #5fa3c7;
+    }
+    
+    .payment-area {
+        background: #1f3f53;
     }
     
     .payment-btn {

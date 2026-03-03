@@ -45,8 +45,6 @@ const discountedBtn = document.getElementById('discountedBtn');
 const paymentButtons = document.querySelectorAll('.payment-btn:not(.clear-btn)');
 const clearButton = document.getElementById('clearPayment');
 const selectedAmountDisplay = document.getElementById('selectedAmount');
-const displayPerPersonFare = document.getElementById('displayPerPersonFare');
-const displayTotalFare = document.getElementById('displayTotalFare');
 const changeDisplay = document.getElementById('changeDisplay');
 const barangayList = document.getElementById('barangayList');
 
@@ -209,7 +207,7 @@ regularBtn.addEventListener('click', function() {
     regularBtn.classList.add('active');
     discountedBtn.classList.remove('active');
     selectedFareType = 'regular';
-    updateAllCalculations();
+    updateChange(); // Just update the change display
     saveSettings();
 });
 
@@ -217,7 +215,7 @@ discountedBtn.addEventListener('click', function() {
     discountedBtn.classList.add('active');
     regularBtn.classList.remove('active');
     selectedFareType = 'discounted';
-    updateAllCalculations();
+    updateChange(); // Just update the change display
     saveSettings();
 });
 
@@ -245,34 +243,28 @@ function init() {
     loadSettings();
     updateBarangayList();
     populateBarangayDropdowns();
-    updateAllCalculations();
+    updateChange(); // Just update change display
     
     // Event listeners
     routeSelect.addEventListener('change', function() {
         updateBarangayList();
         populateBarangayDropdowns();
-        updateAllCalculations();
+        updateChange(); // Just update change display
         saveSettings();
     });
     
-    pickupSelect.addEventListener('change', updateAllCalculations);
-    dropoffSelect.addEventListener('change', updateAllCalculations);
-    multiplierInput.addEventListener('input', updateAllCalculations);
+    pickupSelect.addEventListener('change', updateChange);
+    dropoffSelect.addEventListener('change', updateChange);
+    multiplierInput.addEventListener('input', updateChange);
     
     // Add validation for multiplier
     multiplierInput.addEventListener('blur', function() {
         if (this.value === '' || parseInt(this.value) < 1) {
             this.value = 1;
-            updateAllCalculations();
+            updateChange(); // Just update change display
         }
         saveSettings();
     });
-}
-
-// Update all calculations and display
-function updateAllCalculations() {
-    calculateFare();
-    updateChange();
 }
 
 // Update the displayed barangay list
@@ -325,8 +317,8 @@ function populateBarangayDropdowns() {
     }
 }
 
-// Calculate fare based on selections
-function calculateFare() {
+// Calculate total fare (internal function - not displayed)
+function calculateTotalFare() {
     const route = routeSelect.value;
     const barangays = routeData[route].barangays;
     const pickup = pickupSelect.value;
@@ -338,7 +330,7 @@ function calculateFare() {
     const dropoffIndex = barangays.indexOf(dropoff);
     
     if (pickupIndex === -1 || dropoffIndex === -1) {
-        return;
+        return 0;
     }
     
     // Calculate number of barangays visited (inclusive of pickup and dropoff)
@@ -357,21 +349,12 @@ function calculateFare() {
     }
     
     // Calculate total fare with multiplier
-    const totalFare = baseFarePerPerson * multiplier;
-    
-    // Update displays
-    displayPerPersonFare.textContent = `₱${baseFarePerPerson.toFixed(2)}`;
-    displayTotalFare.textContent = `₱${totalFare.toFixed(2)}`;
-    
-    return { baseFarePerPerson, totalFare, barangaysVisited };
+    return baseFarePerPerson * multiplier;
 }
 
 // Calculate and display change automatically
 function updateChange() {
-    const fareData = calculateFare();
-    if (!fareData) return;
-    
-    const totalFare = fareData.totalFare;
+    const totalFare = calculateTotalFare();
     
     // Handle different payment scenarios
     if (selectedPayment <= 0) {
@@ -411,7 +394,7 @@ function validateLocations() {
         } else if (currentIndex > 0) {
             dropoffSelect.value = barangays[currentIndex - 1];
         }
-        updateAllCalculations();
+        updateChange();
     }
 }
 
