@@ -39,7 +39,7 @@ const routeData = {
 const routeSelect = document.getElementById('routeSelect');
 const pickupSelect = document.getElementById('pickupSelect');
 const dropoffSelect = document.getElementById('dropoffSelect');
-const multiplierInput = document.getElementById('multiplierInput');
+const multiplierButtons = document.querySelectorAll('.multiplier-btn');
 const regularBtn = document.getElementById('regularBtn');
 const discountedBtn = document.getElementById('discountedBtn');
 const paymentButtons = document.querySelectorAll('.payment-btn:not(.clear-btn)');
@@ -51,11 +51,11 @@ const barangayList = document.getElementById('barangayList');
 // State variables
 let selectedFareType = 'regular';
 let selectedPayment = 0;
+let currentMultiplier = 1;
 
 // ========== PWA INSTALLATION & UPDATE HANDLING ==========
 let deferredPrompt;
 const installButton = document.getElementById('installButton');
-let updateCheckInterval = null;
 
 // Register Service Worker with aggressive update handling
 if ('serviceWorker' in navigator) {
@@ -333,6 +333,26 @@ window.addEventListener('appinstalled', (evt) => {
     showToast('✅ App installed successfully!');
 });
 
+// ========== MULTIPLIER BUTTONS ==========
+multiplierButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        // Remove active class from all multiplier buttons
+        multiplierButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Update current multiplier
+        currentMultiplier = parseInt(this.dataset.value);
+        
+        // Update change display
+        updateChange();
+        
+        // Save settings
+        saveSettings();
+    });
+});
+
 // ========== FARE TYPE BUTTONS ==========
 regularBtn.addEventListener('click', function() {
     regularBtn.classList.add('active');
@@ -376,6 +396,13 @@ function init() {
     populateBarangayDropdowns();
     updateChange(); // Just update change display
     
+    // Set active multiplier button based on saved value
+    multiplierButtons.forEach(btn => {
+        if (parseInt(btn.dataset.value) === currentMultiplier) {
+            btn.classList.add('active');
+        }
+    });
+    
     // Event listeners
     routeSelect.addEventListener('change', function() {
         updateBarangayList();
@@ -386,16 +413,6 @@ function init() {
     
     pickupSelect.addEventListener('change', updateChange);
     dropoffSelect.addEventListener('change', updateChange);
-    multiplierInput.addEventListener('input', updateChange);
-    
-    // Add validation for multiplier
-    multiplierInput.addEventListener('blur', function() {
-        if (this.value === '' || parseInt(this.value) < 1) {
-            this.value = 1;
-            updateChange(); // Just update change display
-        }
-        saveSettings();
-    });
     
     // Check for updates when page loads
     if ('serviceWorker' in navigator) {
@@ -461,7 +478,6 @@ function calculateTotalFare() {
     const barangays = routeData[route].barangays;
     const pickup = pickupSelect.value;
     const dropoff = dropoffSelect.value;
-    const multiplier = parseInt(multiplierInput.value) || 1;
     
     // Find indices of pickup and dropoff
     const pickupIndex = barangays.indexOf(pickup);
@@ -487,7 +503,7 @@ function calculateTotalFare() {
     }
     
     // Calculate total fare with multiplier
-    return baseFarePerPerson * multiplier;
+    return baseFarePerPerson * currentMultiplier;
 }
 
 // Calculate and display change automatically
@@ -544,7 +560,7 @@ dropoffSelect.addEventListener('change', validateLocations);
 function saveSettings() {
     const settings = {
         route: routeSelect.value,
-        multiplier: multiplierInput.value,
+        multiplier: currentMultiplier,
         fareType: selectedFareType
     };
     localStorage.setItem('fareCalculatorSettings', JSON.stringify(settings));
@@ -557,7 +573,7 @@ function loadSettings() {
         try {
             const settings = JSON.parse(saved);
             routeSelect.value = settings.route || 'route1';
-            multiplierInput.value = settings.multiplier || 1;
+            currentMultiplier = settings.multiplier || 1;
             
             // Set fare type button
             if (settings.fareType) {

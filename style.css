@@ -520,3 +520,69 @@ footer a:hover::after {
         border-left-color: #5fa3c7;
     }
 }
+
+/* Multiplier buttons */
+.multiplier-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.multiplier-btn {
+    flex: 1;
+    min-width: 40px;
+    padding: 12px 8px;
+    background: linear-gradient(135deg, #4a6fa5, #3a5a8a);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.multiplier-btn:hover {
+    background: linear-gradient(135deg, #5a7fb5, #4a6a9a);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.multiplier-btn.active {
+    background: linear-gradient(135deg, #2e7d5a, #1e5a3e);
+    box-shadow: 0 0 0 3px rgba(46, 125, 90, 0.3);
+}
+
+/* Update grid-3 for better spacing */
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Make sure the fare type buttons still fit */
+.button-group {
+    display: flex;
+    gap: 8px;
+}
+
+.option-btn {
+    flex: 1;
+    padding: 12px 8px;
+    background: #f0f0f0;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.option-btn.active {
+    background: #1a4b6d;
+    border-color: #1a4b6d;
+    color: white;
+}
