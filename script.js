@@ -55,8 +55,9 @@ let selectedPayment = 0;
 // ========== PWA INSTALLATION & UPDATE HANDLING ==========
 let deferredPrompt;
 const installButton = document.getElementById('installButton');
+let updateCheckInterval = null;
 
-// Register Service Worker with better update handling
+// Register Service Worker with aggressive update handling
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         // Register with { updateViaCache: 'none' } to prevent caching of sw.js
@@ -66,15 +67,27 @@ if ('serviceWorker' in navigator) {
         .then(registration => {
             console.log('ServiceWorker registered successfully');
             
-            // Check for updates every hour
+            // Immediate update check after registration
+            registration.update();
+            console.log('Initial update check triggered');
+            
+            // Check for updates every 15 minutes (more frequent)
             setInterval(() => {
                 registration.update();
                 console.log('Checking for service worker updates...');
-            }, 60 * 60 * 1000); // 1 hour
+            }, 15 * 60 * 1000); // 15 minutes
+            
+            // Check for updates when page becomes visible
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    console.log('Page became visible - checking for updates');
+                    registration.update();
+                }
+            });
             
             // Listen for update found
             registration.addEventListener('updatefound', () => {
-                console.log('Update found! New service worker installing...');
+                console.log('🚀 Update found! New service worker installing...');
                 const newWorker = registration.installing;
                 
                 newWorker.addEventListener('statechange', () => {
@@ -82,10 +95,18 @@ if ('serviceWorker' in navigator) {
                     
                     // When new worker is installed and waiting
                     if (newWorker.state === 'installed' && registration.active) {
-                        console.log('New service worker installed and waiting');
-                        showUpdateNotification(registration);
+                        console.log('✨ New service worker installed and waiting');
+                        showUpdateNotification(registration, true); // Show notification immediately
                     }
                 });
+            });
+            
+            // Listen for messages from service worker
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'UPDATE_COMPLETED') {
+                    console.log('Update completed successfully:', event.data.cacheName);
+                    showToast('✅ App updated successfully!');
+                }
             });
         })
         .catch(error => {
@@ -95,84 +116,193 @@ if ('serviceWorker' in navigator) {
         // Listen for controller change (when new worker takes over)
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('Controller changed - new service worker activated');
-            window.location.reload(); // Reload to use new version
+            
+            // Show reload prompt
+            const reloadBanner = document.createElement('div');
+            reloadBanner.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #2e7d5a;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 50px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 10000;
+                display: flex;
+                gap: 15px;
+                align-items: center;
+                font-weight: 600;
+                animation: slideDown 0.3s ease;
+            `;
+            
+            reloadBanner.innerHTML = `
+                <span>🔄 App updated! Reload to see changes</span>
+                <button onclick="location.reload()" style="
+                    background: white;
+                    color: #2e7d5a;
+                    border: none;
+                    padding: 6px 16px;
+                    border-radius: 30px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                ">Reload Now</button>
+            `;
+            
+            document.body.appendChild(reloadBanner);
+            
+            // Auto-hide after 30 seconds
+            setTimeout(() => {
+                reloadBanner.remove();
+            }, 30000);
+        });
+    });
+    
+    // Check for updates when connection is restored
+    window.addEventListener('online', () => {
+        console.log('Connection restored - checking for updates');
+        navigator.serviceWorker.ready.then(registration => {
+            registration.update();
         });
     });
 }
 
-// Show update notification to user
-function showUpdateNotification(registration) {
-    // Create update banner if it doesn't exist
-    if (!document.getElementById('update-banner')) {
-        const banner = document.createElement('div');
-        banner.id = 'update-banner';
-        banner.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a4b6d;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 9999;
-            display: flex;
-            gap: 15px;
-            align-items: center;
+// Show toast message
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a4b6d;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideUp 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideDown 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Show update notification to user immediately
+function showUpdateNotification(registration, immediate = true) {
+    // Remove existing banner if any
+    const existingBanner = document.getElementById('update-banner');
+    if (existingBanner) {
+        existingBanner.remove();
+    }
+    
+    const banner = document.createElement('div');
+    banner.id = 'update-banner';
+    banner.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a4b6d;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        z-index: 9999;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        font-weight: 600;
+        animation: slideUp 0.3s ease;
+        cursor: pointer;
+        transition: transform 0.2s;
+    `;
+    
+    banner.onmouseover = () => banner.style.transform = 'translateX(-50%) scale(1.02)';
+    banner.onmouseout = () => banner.style.transform = 'translateX(-50%) scale(1)';
+    
+    banner.innerHTML = `
+        <span>✨ New version available!</span>
+        <button id="update-btn" style="
+            background: white;
+            color: #1a4b6d;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
             font-weight: 600;
-            animation: slideUp 0.3s ease;
-        `;
-        
-        banner.innerHTML = `
-            <span>✨ New version available!</span>
-            <button id="update-btn" style="
-                background: white;
-                color: #1a4b6d;
-                border: none;
-                padding: 8px 20px;
-                border-radius: 30px;
-                font-weight: 600;
-                cursor: pointer;
-                font-size: 0.9rem;
-                transition: all 0.2s;
-            ">Update Now</button>
-        `;
-        
-        document.body.appendChild(banner);
-        
-        // Add animation style if not exists
-        if (!document.getElementById('update-animation-style')) {
-            const style = document.createElement('style');
-            style.id = 'update-animation-style';
-            style.textContent = `
-                @keyframes slideUp {
-                    from {
-                        opacity: 0;
-                        transform: translate(-50%, 20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translate(-50%, 0);
-                    }
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        ">Update Now</button>
+    `;
+    
+    document.body.appendChild(banner);
+    
+    // Add animation style if not exists
+    if (!document.getElementById('update-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'update-animation-style';
+        style.textContent = `
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translate(-50%, 20px);
                 }
-                #update-btn:hover {
-                    background: #f0f0f0;
-                    transform: scale(1.05);
+                to {
+                    opacity: 1;
+                    transform: translate(-50%, 0);
                 }
-            `;
-            document.head.appendChild(style);
+            }
+            @keyframes slideDown {
+                from {
+                    opacity: 1;
+                    transform: translate(-50%, 0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translate(-50%, 20px);
+                }
+            }
+            #update-btn:hover {
+                background: #f0f0f0;
+                transform: scale(1.05);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Handle update button click
+    document.getElementById('update-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Send message to waiting service worker to activate
+        if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            banner.innerHTML = '<span>🔄 Updating...</span>';
+        } else {
+            // If no waiting worker, check again
+            registration.update();
+            banner.innerHTML = '<span>🔄 Checking for updates...</span>';
         }
         
-        // Handle update button click
-        document.getElementById('update-btn').addEventListener('click', () => {
-            // Send message to waiting service worker to activate
-            if (registration.waiting) {
-                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-            }
+        setTimeout(() => {
             banner.remove();
-        });
-    }
+        }, 2000);
+    });
+    
+    // Auto-hide after 2 minutes if not interacted with
+    setTimeout(() => {
+        if (document.getElementById('update-banner')) {
+            banner.remove();
+        }
+    }, 120000);
 }
 
 // Listen for beforeinstallprompt event
@@ -200,6 +330,7 @@ window.addEventListener('appinstalled', (evt) => {
     installButton.style.display = 'none';
     deferredPrompt = null;
     console.log('App was installed successfully');
+    showToast('✅ App installed successfully!');
 });
 
 // ========== FARE TYPE BUTTONS ==========
@@ -265,6 +396,13 @@ function init() {
         }
         saveSettings();
     });
+    
+    // Check for updates when page loads
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.update();
+        });
+    }
 }
 
 // Update the displayed barangay list
@@ -449,6 +587,13 @@ function updateOnlineStatus() {
         setTimeout(() => {
             offlineDiv.remove();
         }, 3000);
+    } else {
+        // When coming back online, check for updates
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(registration => {
+                registration.update();
+            });
+        }
     }
 }
 
