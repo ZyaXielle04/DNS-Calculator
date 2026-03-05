@@ -61,56 +61,212 @@ const installButton = document.getElementById('installButton');
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
-// Show appropriate install instructions based on platform
-function showInstallInstructions() {
-    if (isStandalone) return; // Already installed as PWA
+// Show iOS installation instructions (prominent and persistent)
+function showiOSInstallInstructions() {
+    if (isStandalone) return; // Already installed
     
-    if (isIOS) {
-        // iOS-specific install message
-        const iosInstallMsg = document.createElement('div');
-        iosInstallMsg.className = 'ios-install-message';
-        iosInstallMsg.style.cssText = `
-            background: #f0f8ff;
-            border: 2px solid #1a4b6d;
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0;
-            text-align: center;
-            animation: slideUp 0.5s ease;
-        `;
-        iosInstallMsg.innerHTML = `
-            <div style="font-size: 2rem; margin-bottom: 10px;">📱</div>
-            <h3 style="color: #1a4b6d; margin: 0 0 10px 0;">Install This App</h3>
-            <p style="margin: 5px 0; color: #333;">1. Tap the Share button <span style="font-size:1.2rem;">⎙</span></p>
-            <p style="margin: 5px 0; color: #333;">2. Scroll down and tap <strong>"Add to Home Screen"</strong></p>
-            <p style="margin: 5px 0; color: #333;">3. Tap "Add" in the top right corner</p>
-            <button id="closeIosMsg" style="
-                background: #1a4b6d;
+    // Remove any existing iOS banner
+    const existingBanner = document.getElementById('ios-install-banner');
+    if (existingBanner) existingBanner.remove();
+    
+    // Create a sticky banner at the top
+    const iosBanner = document.createElement('div');
+    iosBanner.id = 'ios-install-banner';
+    iosBanner.style.cssText = `
+        background: linear-gradient(135deg, #1a4b6d, #2e7d5a);
+        color: white;
+        padding: 15px;
+        border-radius: 12px;
+        margin: 10px 0 20px 0;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        border: 2px solid #ffd966;
+        position: relative;
+        animation: pulse 2s infinite;
+    `;
+    
+    iosBanner.innerHTML = `
+        <div style="font-size: 2rem; margin-bottom: 10px;">📱 ➕ 🏠</div>
+        <h3 style="margin: 0 0 10px 0; color: #ffd966;">Install as App on iPhone/iPad</h3>
+        <p style="margin: 8px 0; font-size: 1rem;">1️⃣ Tap the <strong style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 20px;">Share ⎙</strong> button below</p>
+        <p style="margin: 8px 0; font-size: 1rem;">2️⃣ Scroll down & tap <strong style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 20px;">"Add to Home Screen"</strong></p>
+        <p style="margin: 8px 0; font-size: 1rem;">3️⃣ Tap <strong style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 20px;">"Add"</strong> in top right</p>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+            <button id="dismiss-ios" style="
+                background: transparent;
                 color: white;
-                border: none;
+                border: 2px solid white;
                 padding: 8px 20px;
-                border-radius: 20px;
-                margin-top: 10px;
+                border-radius: 30px;
                 cursor: pointer;
                 font-weight: 600;
-            ">Got it!</button>
+                font-size: 0.9rem;
+            ">✓ Got it</button>
+            <button id="remind-later-ios" style="
+                background: transparent;
+                color: #ffd966;
+                border: 2px solid #ffd966;
+                padding: 8px 20px;
+                border-radius: 30px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.9rem;
+            ">Remind Later</button>
+        </div>
+    `;
+    
+    // Insert at the top of the card (after h1)
+    const card = document.querySelector('.card');
+    const h1 = document.querySelector('h1');
+    card.insertBefore(iosBanner, h1.nextSibling);
+    
+    // Add animation keyframes if not exists
+    if (!document.getElementById('ios-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'ios-animation-style';
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.02); }
+                100% { transform: scale(1); }
+            }
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+            #ios-install-banner {
+                transition: all 0.3s ease;
+            }
+            #ios-help-button {
+                animation: bounce 2s infinite;
+            }
+            #ios-help-button:hover {
+                background: #2e7d5a;
+                transform: scale(1.05);
+            }
         `;
-        
-        // Insert after the card
-        document.querySelector('.card').appendChild(iosInstallMsg);
-        
-        document.getElementById('closeIosMsg').addEventListener('click', function() {
-            iosInstallMsg.remove();
-        });
-        
-        // Auto-hide after 10 seconds
-        setTimeout(() => {
-            if (iosInstallMsg.parentNode) iosInstallMsg.remove();
-        }, 10000);
-    } else {
-        // Android/Desktop - show install button when prompted
-        installButton.style.display = 'flex';
+        document.head.appendChild(style);
     }
+    
+    // Handle dismiss
+    document.getElementById('dismiss-ios').addEventListener('click', function(e) {
+        e.stopPropagation();
+        iosBanner.remove();
+        localStorage.setItem('iosInstallDismissed', 'true');
+        showToast('You can always tap the 📱 button to install later');
+    });
+    
+    // Handle remind later
+    document.getElementById('remind-later-ios').addEventListener('click', function(e) {
+        e.stopPropagation();
+        iosBanner.remove();
+        // Show again after 24 hours (in milliseconds)
+        localStorage.setItem('iosInstallRemindTime', Date.now() + 24 * 60 * 60 * 1000);
+        showToast('Reminder set for tomorrow');
+    });
+}
+
+// Add a floating help button for iOS users
+function addiOSHelpButton() {
+    if (!isIOS || isStandalone) return;
+    
+    // Check if button already exists
+    if (document.getElementById('ios-help-button')) return;
+    
+    const helpButton = document.createElement('button');
+    helpButton.id = 'ios-help-button';
+    helpButton.innerHTML = '📱 Install App';
+    helpButton.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #1a4b6d;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        cursor: pointer;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid #ffd966;
+    `;
+    
+    document.body.appendChild(helpButton);
+    
+    // Show instructions when clicked
+    helpButton.addEventListener('click', function() {
+        // Remove existing banner if any
+        const existingBanner = document.getElementById('ios-install-banner');
+        if (existingBanner) existingBanner.remove();
+        
+        showiOSInstallInstructions();
+        
+        // Scroll to instructions smoothly
+        setTimeout(() => {
+            document.getElementById('ios-install-banner').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }, 100);
+    });
+}
+
+// Check if we should show iOS install instructions
+function checkAndShowiOSInstructions() {
+    if (!isIOS || isStandalone) return;
+    
+    // Check if user dismissed permanently
+    if (localStorage.getItem('iosInstallDismissed') === 'true') {
+        // Still show the help button even if dismissed
+        addiOSHelpButton();
+        return;
+    }
+    
+    // Check remind later time
+    const remindTime = localStorage.getItem('iosInstallRemindTime');
+    if (remindTime && Date.now() < parseInt(remindTime)) {
+        addiOSHelpButton();
+        return;
+    }
+    
+    // Show instructions after a short delay
+    setTimeout(() => {
+        showiOSInstallInstructions();
+        addiOSHelpButton();
+    }, 1500);
+}
+
+// Triple-tap on header to show instructions
+function addTripleTapListener() {
+    let tapCount = 0;
+    let tapTimer;
+    
+    document.addEventListener('touchend', function(e) {
+        // If user taps on header or its children
+        if (e.target.closest('h1')) {
+            tapCount++;
+            
+            clearTimeout(tapTimer);
+            tapTimer = setTimeout(() => {
+                tapCount = 0;
+            }, 2000);
+            
+            if (tapCount === 3) {
+                // Remove existing banner if any
+                const existingBanner = document.getElementById('ios-install-banner');
+                if (existingBanner) existingBanner.remove();
+                
+                showiOSInstallInstructions();
+                showToast('✨ Installation guide activated!');
+                tapCount = 0;
+            }
+        }
+    });
 }
 
 // Check if already installed as PWA
@@ -119,17 +275,24 @@ if (isStandalone) {
     // Add installed badge to header
     const h1 = document.querySelector('h1');
     if (h1) {
-        h1.innerHTML = h1.innerHTML + ' <span style="font-size: 0.8rem; background: #4CAF50; color: white; padding: 3px 8px; border-radius: 20px; margin-left: 10px;">Installed</span>';
+        h1.innerHTML = h1.innerHTML + ' <span style="font-size: 0.8rem; background: #4CAF50; color: white; padding: 3px 8px; border-radius: 20px; margin-left: 10px;">✓ Installed</span>';
     }
 }
 
-// For non-iOS devices, listen for beforeinstallprompt
-if (!isIOS) {
+// For iOS, show installation instructions
+if (isIOS) {
+    // Check and show instructions
+    setTimeout(() => {
+        checkAndShowiOSInstructions();
+        addTripleTapListener();
+    }, 2000);
+} else {
+    // For non-iOS devices, listen for beforeinstallprompt
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         
-        // Only show if not already installed and not on iOS
+        // Only show if not already installed
         if (!isStandalone) {
             installButton.style.display = 'flex';
         }
@@ -147,9 +310,6 @@ if (!isIOS) {
         installButton.style.display = 'none';
         deferredPrompt = null;
     });
-} else {
-    // On iOS, show the install instructions immediately
-    setTimeout(showInstallInstructions, 2000);
 }
 
 // App installed event (works on both platforms after installation)
@@ -159,9 +319,18 @@ window.addEventListener('appinstalled', (evt) => {
     console.log('App was installed successfully');
     showToast('✅ App installed successfully!');
     
-    // Remove iOS message if present
-    const iosMsg = document.querySelector('.ios-install-message');
+    // Remove iOS elements if present
+    const iosMsg = document.getElementById('ios-install-banner');
     if (iosMsg) iosMsg.remove();
+    
+    const iosBtn = document.getElementById('ios-help-button');
+    if (iosBtn) iosBtn.remove();
+    
+    // Update header with installed badge
+    const h1 = document.querySelector('h1');
+    if (h1 && !h1.innerHTML.includes('Installed')) {
+        h1.innerHTML = h1.innerHTML + ' <span style="font-size: 0.8rem; background: #4CAF50; color: white; padding: 3px 8px; border-radius: 20px; margin-left: 10px;">✓ Installed</span>';
+    }
 });
 
 // Register Service Worker with aggressive update handling
