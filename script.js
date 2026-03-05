@@ -57,6 +57,113 @@ let currentMultiplier = 1;
 let deferredPrompt;
 const installButton = document.getElementById('installButton');
 
+// Detect if running on iOS
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+// Show appropriate install instructions based on platform
+function showInstallInstructions() {
+    if (isStandalone) return; // Already installed as PWA
+    
+    if (isIOS) {
+        // iOS-specific install message
+        const iosInstallMsg = document.createElement('div');
+        iosInstallMsg.className = 'ios-install-message';
+        iosInstallMsg.style.cssText = `
+            background: #f0f8ff;
+            border: 2px solid #1a4b6d;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            animation: slideUp 0.5s ease;
+        `;
+        iosInstallMsg.innerHTML = `
+            <div style="font-size: 2rem; margin-bottom: 10px;">📱</div>
+            <h3 style="color: #1a4b6d; margin: 0 0 10px 0;">Install This App</h3>
+            <p style="margin: 5px 0; color: #333;">1. Tap the Share button <span style="font-size:1.2rem;">⎙</span></p>
+            <p style="margin: 5px 0; color: #333;">2. Scroll down and tap <strong>"Add to Home Screen"</strong></p>
+            <p style="margin: 5px 0; color: #333;">3. Tap "Add" in the top right corner</p>
+            <button id="closeIosMsg" style="
+                background: #1a4b6d;
+                color: white;
+                border: none;
+                padding: 8px 20px;
+                border-radius: 20px;
+                margin-top: 10px;
+                cursor: pointer;
+                font-weight: 600;
+            ">Got it!</button>
+        `;
+        
+        // Insert after the card
+        document.querySelector('.card').appendChild(iosInstallMsg);
+        
+        document.getElementById('closeIosMsg').addEventListener('click', function() {
+            iosInstallMsg.remove();
+        });
+        
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            if (iosInstallMsg.parentNode) iosInstallMsg.remove();
+        }, 10000);
+    } else {
+        // Android/Desktop - show install button when prompted
+        installButton.style.display = 'flex';
+    }
+}
+
+// Check if already installed as PWA
+if (isStandalone) {
+    console.log('App is running in standalone mode (installed)');
+    // Add installed badge to header
+    const h1 = document.querySelector('h1');
+    if (h1) {
+        h1.innerHTML = h1.innerHTML + ' <span style="font-size: 0.8rem; background: #4CAF50; color: white; padding: 3px 8px; border-radius: 20px; margin-left: 10px;">Installed</span>';
+    }
+}
+
+// For non-iOS devices, listen for beforeinstallprompt
+if (!isIOS) {
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Only show if not already installed and not on iOS
+        if (!isStandalone) {
+            installButton.style.display = 'flex';
+        }
+    });
+
+    // Install button click handler (for Android/Desktop)
+    installButton.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        deferredPrompt.prompt();
+        
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        
+        installButton.style.display = 'none';
+        deferredPrompt = null;
+    });
+} else {
+    // On iOS, show the install instructions immediately
+    setTimeout(showInstallInstructions, 2000);
+}
+
+// App installed event (works on both platforms after installation)
+window.addEventListener('appinstalled', (evt) => {
+    installButton.style.display = 'none';
+    deferredPrompt = null;
+    console.log('App was installed successfully');
+    showToast('✅ App installed successfully!');
+    
+    // Remove iOS message if present
+    const iosMsg = document.querySelector('.ios-install-message');
+    if (iosMsg) iosMsg.remove();
+});
+
 // Register Service Worker with aggressive update handling
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -304,34 +411,6 @@ function showUpdateNotification(registration, immediate = true) {
         }
     }, 120000);
 }
-
-// Listen for beforeinstallprompt event
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installButton.style.display = 'flex';
-});
-
-// Install button click handler
-installButton.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    
-    deferredPrompt.prompt();
-    
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
-    
-    installButton.style.display = 'none';
-    deferredPrompt = null;
-});
-
-// App installed event
-window.addEventListener('appinstalled', (evt) => {
-    installButton.style.display = 'none';
-    deferredPrompt = null;
-    console.log('App was installed successfully');
-    showToast('✅ App installed successfully!');
-});
 
 // ========== MULTIPLIER BUTTONS ==========
 multiplierButtons.forEach(button => {
